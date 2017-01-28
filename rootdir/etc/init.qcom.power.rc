@@ -74,6 +74,20 @@ on enable-low-power
     write /sys/devices/soc.0/qcom,bcl.62/hotplug_soc_mask 240
     write /sys/devices/soc.0/qcom,bcl.62/mode "enable"
 
+    # Re-enabled A57 cores
+    write /sys/devices/system/cpu/cpu5/online 1
+    write /sys/devices/system/cpu/cpu6/online 1
+    write /sys/devices/system/cpu/cpu7/online 1
+
+    # change GPU initial power level from 305MHz(level 4) to 180MHz(level 5) for power savings
+    write /sys/class/kgsl/kgsl-3d0/default_pwrlevel 5
+
+    # Configure foreground and background cpuset
+    write /dev/cpuset/foreground/cpus 0-7
+    write /dev/cpuset/foreground/boost/cpus 4-7
+    write /dev/cpuset/background/cpus 0
+    write /dev/cpuset/system-background/cpus 0-3
+
     # Enable low power modes
     write /sys/module/lpm_levels/parameters/sleep_disabled 0
 
@@ -81,7 +95,7 @@ on enable-low-power
     write /sys/module/msm_performance/parameters/cpu_max_freq "4:4294967295 5:4294967295 6:4294967295 7:4294967295"
 
     # Input boost configuration
-    write /sys/module/cpu_boost/parameters/input_boost_freq "0:1344000"
+    write /sys/module/cpu_boost/parameters/input_boost_freq "0:1248000"
     write /sys/module/cpu_boost/parameters/input_boost_ms 40
 
     # Configure core_ctl module parameters
@@ -103,10 +117,10 @@ on enable-low-power
 
     # Setting big.LITTLE scheduler parameters
     write /proc/sys/kernel/sched_migration_fixup 1
-    write /proc/sys/kernel/sched_small_task 30
-    write /proc/sys/kernel/sched_mostly_idle_load 20
+    write /proc/sys/kernel/sched_small_task 32
+    write /proc/sys/kernel/sched_mostly_idle_load 18
     write /proc/sys/kernel/sched_mostly_idle_nr_run 3
-    write /proc/sys/kernel/sched_upmigrate 99
+    write /proc/sys/kernel/sched_upmigrate 98
     write /proc/sys/kernel/sched_downmigrate 85
     write /proc/sys/kernel/sched_freq_inc_notify 400000
     write /proc/sys/kernel/sched_freq_dec_notify 400000
@@ -140,11 +154,11 @@ on charger
     write /sys/devices/system/cpu/cpu3/online 0
     write /sys/module/lpm_levels/parameters/sleep_disabled 0
 
-on class_start:late_start
+on property:sys.boot_completed=1
     trigger enable-low-power
 
 on property:init.svc.recovery=running
     trigger enable-low-power
 
 on property:dev.bootcomplete=1
-    setprop sys.io.scheduler "bfq"
+    setprop sys.io.scheduler "sio"

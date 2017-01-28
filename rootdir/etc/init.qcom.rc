@@ -1,4 +1,5 @@
 # Copyright (c) 2009-2012, 2014-2015, The Linux Foundation. All rights reserved.
+# Copyright (C) 2016 halogenOS
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,9 +32,8 @@ import init.qcom.usb.rc
 on early-init
     symlink /data/tombstones /tombstones
 
-    # Setup zram options
-    write /sys/block/zram0/comp_algorithm lz4
-    write /proc/sys/vm/swappiness 100
+    # Swappiness 4. Enough + more performance without battery drain
+    write /proc/sys/vm/swappiness 4
 
 on early-fs
     mkdir /firmware 0771 system system
@@ -44,10 +44,10 @@ on early-fs
 
 on init
     export LD_SHIM_LIBS "/system/vendor/lib64/lib-imscamera.so|libshim_ims-camera.so:/system/lib/libopcamerahw_interface.so|libshim_camera.so:/system/lib/libFNVfbEngineLib.so|libshim_camera.so"
-
     chmod 0644 /proc/cmdline
 
     symlink /sdcard /storage/sdcard0
+    symlink /sdcard /mnt/sdcard
 
     # Slow Motion Scheduling Group
     mkdir /dev/cpuctl/smsg
@@ -119,6 +119,9 @@ on init
     chown root system /proc/s1302/virtual_key
     chmod 0660 /proc/s1302/virtual_key
 
+    chown root system /proc/s1302/reset
+    chmod 0660 /proc/s1302/reset
+
     chown root system /proc/tri-state-key/keyCode_top
     chmod 0660 /proc/tri-state-key/keyCode_top
 
@@ -188,7 +191,7 @@ on init
     chown system drmrpc /sys/devices/soc.0/f9924000.i2c/i2c-2/2-004a/secure_touch_enable
     chown system drmrpc /sys/devices/soc.0/f9924000.i2c/i2c-2/2-004a/secure_touch
     write /proc/sys/kernel/sched_boost 1
-    write /proc/sys/vm/dirty_ratio 15
+    write /proc/sys/vm/dirty_ratio 14
     write /proc/sys/vm/dirty_background_ratio 1
 
     # Modify for drv2605 support
@@ -258,28 +261,6 @@ on boot
     write /proc/sys/net/core/rmem_max  8388608
     write /proc/sys/net/core/wmem_max  8388608
 
-    #To allow interfaces to get v6 address when tethering is enabled
-    write /proc/sys/net/ipv6/conf/rmnet0/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet1/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet2/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet3/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet4/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet5/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet6/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet7/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_sdio0/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_sdio1/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_sdio2/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_sdio3/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_sdio4/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_sdio5/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_sdio6/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_sdio7/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_usb0/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_usb1/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_usb2/accept_ra 2
-    write /proc/sys/net/ipv6/conf/rmnet_usb3/accept_ra 2
-
     # To prevent out of order acknowledgements from making
     # connection tracking to treat them as not belonging to
     # the connection they belong to.
@@ -296,7 +277,6 @@ on boot
     chmod 0664 /sys/class/graphics/fb0/idle_time
 
     # setup permissions for fb1 related nodes
-    chown system graphics /sys/class/graphics/fb0/idle_time
     chown system graphics /sys/class/graphics/fb0/dynamic_fps
     chown system graphics /sys/class/graphics/fb0/dyn_pu
     chown system graphics /sys/class/graphics/fb0/modes
@@ -511,12 +491,6 @@ on property:init.svc.per_mgr=running
 on property:sys.shutdown.requested=*
     stop per_proxy
 
-service zram-init /system/bin/sh /system/etc/init.zram.sh
-    class late_start
-    user root
-    disabled
-    oneshot
-
 service fingerprintd /system/bin/fingerprintd
     class late_start
     user system
@@ -627,6 +601,14 @@ service usf-post-boot /system/bin/sh /system/etc/usf_post_boot.sh
     oneshot
 
 on property:init.svc.bootanim=running
+    write /sys/devices/system/cpu/cpu0/online 1
+    write /sys/devices/system/cpu/cpu1/online 1
+    write /sys/devices/system/cpu/cpu2/online 1
+    write /sys/devices/system/cpu/cpu3/online 1
+    write /sys/devices/system/cpu/cpu4/online 1
+    write /sys/devices/system/cpu/cpu5/online 1
+    write /sys/devices/system/cpu/cpu6/online 1
+    write /sys/devices/system/cpu/cpu7/online 1
     write /sys/module/lpm_levels/system/a53/cpu0/retention/idle_enabled 0
     write /sys/module/lpm_levels/system/a53/cpu1/retention/idle_enabled 0
     write /sys/module/lpm_levels/system/a53/cpu2/retention/idle_enabled 0
@@ -637,7 +619,7 @@ on property:init.svc.bootanim=running
     write /sys/module/lpm_levels/system/a57/cpu7/retention/idle_enabled 0
     write /sys/module/lpm_levels/system/a57/a57-l2-retention/idle_enabled 0
     write /sys/module/lpm_levels/system/a53/a53-l2-retention/idle_enabled 0
-    write /sys/module/lpm_levels/parameters/sleep_disabled 0
+    write /sys/module/lpm_levels/parameters/sleep_disabled 1
 
 on property:init.svc.bootanim=stopped
     start usf-post-boot
@@ -648,9 +630,16 @@ service energy-awareness /system/bin/energy-awareness
     group system
     oneshot
 
+# MSM Hotplug default settings are applied here
+service msmhotplug_def /system/bin/sh /system/etc/msmhotplug-default.sh
+    user root
+    oneshot
+    disabled
+
 on property:sys.boot_completed=1
-    start zram-init
-    write /dev/kmsg "Boot completed "
+    write /sys/module/lpm_levels/parameters/sleep_disabled 0
+    start msmhotplug_def
+    write /dev/kmsg "Boot completed"
 
 # corefile limit and ETB enabling
 on property:persist.debug.trace=1
@@ -723,6 +712,7 @@ service cnd /system/bin/cnd
 service dpmd /system/bin/dpmd
     class late_start
     socket dpmd stream 660 root system
+    disabled
 
 service irsc_util /system/bin/irsc_util "/etc/sec_config"
     class main
@@ -903,12 +893,6 @@ service wpa_supplicant /system/bin/wpa_supplicant \
     class main
     socket wpa_wlan0 dgram 660 wifi wifi
     disabled
-    oneshot
-
-service ptt_socket_app /system/bin/ptt_socket_app -d
-    class main
-    user root
-    group root
     oneshot
 
 service ptt_ffbm /system/bin/ptt_socket_app -f -d
