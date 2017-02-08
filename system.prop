@@ -1,22 +1,35 @@
 # OnePlus 2-specific system properties
 
 # Audio
+persist.spkr.cal.duration=0
+qcom.hw.aac.encoder=true
+mm.enable.smoothstreaming=true
+media.aac_51_output_enabled=true
+ro.qc.sdk.audio.ssr=false
+persist.audio.ssr.3mic=false
+ro.qc.sdk.audio.fluencetype=fluence
 persist.audio.fluence.voicecall=true
 persist.audio.fluence.voicerec=false
 persist.audio.fluence.speaker=true
-ro.qc.sdk.audio.fluencetype=fluence
-ro.qc.sdk.audio.ssr=false
-persist.audio.ssr.3mic=false
-media.aac_51_output_enabled=true
+tunnel.audio.encode=false
+audio.offload.gapless.enabled=true
+audio.offload.buffer.size.kb=32
+audio.offload.video=true
 audio.offload.pcm.16bit.enable=true
 audio.offload.pcm.24bit.enable=true
-use.voice.path.for.pcm.voip=true
+audio.offload.passthrough=false
 audio.offload.multiple.enabled=true
-audio.offload.gapless.enabled=true
-mm.enable.smoothstreaming=true
-audio.offload.buffer.size.kb=256
-audio.offload.video=true
-audio.offload.track.enable=true
+audio.deep_buffer.media=true
+use.voice.path.for.pcm.voip=true
+ro.fm.transmitter=false
+audio.dolby.ds2.enabled=true
+audio.dolby.ds2.hardbypass=true
+audio.offload.min.duration.secs=30
+persist.audio.DiracEnable=true
+persist.audio.DiracHeadset=2
+persist.dirac.acs.controller=qem
+af.fast_track_multiplier=2
+audio_hal.period_size=192
 
 # Bluetooth
 bluetooth.hfp.client=1
@@ -70,7 +83,7 @@ ro.pip.gated=0
 persist.hwc.mdpcomp.enable=true
 persist.demo.hdmirotationlock=false
 ro.qualcomm.cabl=0
-ro.sf.lcd_density=400
+ro.sf.lcd_density=480
 ro.opengles.version=196610
 
 # Time services
@@ -105,11 +118,13 @@ persist.radio.start_ota_daemon=1
 persist.radio.rat_on=combine
 persist.data.qmi.adb_logmask=0
 ro.ril.enable.amr.wideband=1
+ro.telephony.sim_unlocked=1
 
 # Sensors
 ro.qc.sdk.sensors.gestures=true
 ro.qc.sdk.gestures.camera=false
 ro.qc.sdk.camera.facialproc=false
+sensor.sm.force.nowakeup=1
 
 # Tethering
 net.tethering.noprovisioning=true
@@ -117,22 +132,16 @@ net.tethering.noprovisioning=true
 # Wifi
 persist.data.iwlan.enable=true
 
-# OnePlus 2-specific things (OOS3)
+# OOS 3 stuff
 dev.pm.dyn_samplingrate=1
 debug.sf.hw=1
 debug.egl.hw=1
 persist.mdpcomp.4k2kSplit=1
-persist.hwc.mdpcomp.maxpermixer=5
+persist.hwc.mdpcomp.maxpermixer=6
 persist.mdpcomp_perfhint=60
 mmp.enable.3g2=true
-ro.fm.transmitter=false
-persist.audio.DiracEnable=true
-persist.audio.DiracHeadset=2
-persist.dirac.acs.controller=qem
 persist.radio.custom_ecc=1
-af.fast_track_multiplier=2
-audio_hal.period_size=192
-mm.enable.qcom_parser=3253107
+mm.enable.qcom_parser=3379827
 
 # Hardware Info
 ro.device.chipset=Qualcomm MSM8994 Snapdragon 810
